@@ -53,7 +53,7 @@ def generate_debate_response(
         response = client.chat.completions.create(
             model="gpt-3.5-turbo",
             messages=messages,
-            max_tokens=500,
+            max_completion_tokens=500,
             temperature=0.7,
             presence_penalty=0.6,
             frequency_penalty=0.3,
