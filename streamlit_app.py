@@ -2,6 +2,121 @@
 import streamlit as st
 import requests
 import time
+import os
+import uuid
+from typing import List, Optional
+from openai import OpenAI
+from dotenv import load_dotenv
+from task_2.models import Message
+from task_2.prompt import SYSTEM_PROMPT
+
+# Load environment variables
+load_dotenv()
+
+
+# Initialize OpenAI client
+@st.cache_resource
+def get_openai_client():
+    """Get OpenAI client with proper configuration"""
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        st.error("❌ OPENAI_API_KEY environment variable is required")
+        st.stop()
+    return OpenAI(api_key=api_key)
+
+
+def generate_debate_response(
+    user_message: str,
+    topic: Optional[str],
+    side: str,
+    conversation_history: List[Message],
+) -> str:
+    """Generate AI response for debate"""
+    try:
+        client = get_openai_client()
+
+        # Format the system prompt with topic and side
+        system_prompt = SYSTEM_PROMPT.format(
+            topic=topic or "the given topic", side=side
+        )
+
+        # Prepare messages for OpenAI
+        messages = [{"role": "system", "content": system_prompt}]
+
+        # Add conversation history
+        for msg in conversation_history:
+            messages.append({"role": msg.role, "content": msg.message})
+
+        # Add the current user message
+        messages.append({"role": "user", "content": user_message})
+
+        # Call OpenAI API
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=messages,
+            max_tokens=500,
+            temperature=0.7,
+            presence_penalty=0.6,
+            frequency_penalty=0.3,
+        )
+
+        return response.choices[0].message.content
+
+    except Exception as e:
+        print(f"Error generating response: {e}")
+        return f"I apologize, but I'm having trouble generating a response right now. Error: {str(e)}"
+
+
+def process_message_with_api(payload: dict) -> dict:
+    """Process message using external API server"""
+    try:
+        response = requests.post("http://localhost:8000/chat", json=payload, timeout=10)
+        if response.status_code == 200:
+            return response.json()
+        else:
+            raise Exception(f"API returned status {response.status_code}")
+    except requests.exceptions.ConnectionError:
+        raise Exception("Cannot connect to API server")
+    except Exception as e:
+        raise Exception(f"API error: {str(e)}")
+
+
+def process_message_integrated(payload: dict) -> dict:
+    """Process message using integrated AI functionality"""
+    try:
+        # Get or create conversation
+        conversation_id = payload.get("conversation_id") or str(uuid.uuid4())
+
+        # Get existing conversation or create new one
+        if "conversations" not in st.session_state:
+            st.session_state["conversations"] = {}
+
+        if conversation_id not in st.session_state["conversations"]:
+            st.session_state["conversations"][conversation_id] = []
+
+        conversation_history = st.session_state["conversations"][conversation_id]
+
+        # Add user message to conversation
+        user_message = Message(role="user", message=payload["message"])
+        conversation_history.append(user_message)
+
+        # Generate AI response
+        ai_response = generate_debate_response(
+            payload["message"],
+            payload.get("topic"),
+            payload.get("side", "pro"),
+            conversation_history[:-1],  # Exclude the just-added user message
+        )
+
+        # Add AI response to conversation
+        bot_message = Message(role="assistant", message=ai_response)
+        conversation_history.append(bot_message)
+
+        return {"conversation_id": conversation_id, "message": conversation_history}
+
+    except Exception as e:
+        raise Exception(f"Integrated processing error: {str(e)}")
+
 
 # Page configuration
 st.set_page_config(
@@ -401,41 +516,24 @@ if message_submitted and user_input:
             "side": side,
         }
 
+        # Try to use API server first, fallback to integrated processing
         try:
-            response = requests.post("http://localhost:8000/chat", json=payload)
-            if response.status_code == 200:
-                data = response.json()
+            data = process_message_with_api(payload)
+            st.session_state["conversation_id"] = data["conversation_id"]
+            st.session_state["messages"] = data["message"]
+            st.session_state["last_input"] = user_input
+            st.rerun()
+        except Exception as api_error:
+            # Fallback to integrated processing
+            try:
+                st.info("🔄 Using integrated AI processing...")
+                data = process_message_integrated(payload)
                 st.session_state["conversation_id"] = data["conversation_id"]
                 st.session_state["messages"] = data["message"]
                 st.session_state["last_input"] = user_input
                 st.rerun()
-            else:
-                # If conversation not found, try starting a new one
-                if "Conversation not found" in str(response.text):
-                    st.warning(
-                        "🔄 Previous conversation expired. Starting a new one..."
-                    )
-                    # Clear the conversation_id and try again
-                    payload["conversation_id"] = None
-                    retry_response = requests.post(
-                        "http://localhost:8000/chat", json=payload
-                    )
-                    if retry_response.status_code == 200:
-                        data = retry_response.json()
-                        st.session_state["conversation_id"] = data["conversation_id"]
-                        st.session_state["messages"] = data["message"]
-                        st.session_state["last_input"] = user_input
-                        st.success("✨ New conversation started!")
-                        st.rerun()
-                    else:
-                        st.error(
-                            f"❌ Error starting new conversation: {retry_response.status_code}"
-                        )
-                else:
-                    st.error(f"❌ Error communicating with API: {response.status_code}")
-        except requests.exceptions.ConnectionError:
-            st.error(
-                "🔌 Cannot connect to the API server. Please make sure the FastAPI server is running on localhost:8000"
-            )
+            except Exception as integrated_error:
+                st.error(f"❌ Error processing message: {str(integrated_error)}")
+                st.error(f"API Error: {str(api_error)}")
 
 st.markdown("</div>", unsafe_allow_html=True)
