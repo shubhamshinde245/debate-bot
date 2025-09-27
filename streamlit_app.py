@@ -112,7 +112,12 @@ def process_message_integrated(payload: dict) -> dict:
         bot_message = Message(role="assistant", message=ai_response)
         conversation_history.append(bot_message)
 
-        return {"conversation_id": conversation_id, "message": conversation_history}
+        # Convert Message objects to dictionaries for session state compatibility
+        message_dicts = []
+        for msg in conversation_history:
+            message_dicts.append({"role": msg.role, "message": msg.message})
+
+        return {"conversation_id": conversation_id, "message": message_dicts}
 
     except Exception as e:
         raise Exception(f"Integrated processing error: {str(e)}")
@@ -425,13 +430,22 @@ if "messages" in st.session_state and st.session_state["messages"]:
 
     with messages_container:
         for i, msg in enumerate(st.session_state["messages"]):
-            if msg["role"] == "user":
+            # Handle both dictionary and Message object formats
+            if isinstance(msg, dict):
+                role = msg["role"]
+                message_text = msg["message"]
+            else:
+                # Message object (Pydantic model)
+                role = msg.role
+                message_text = msg.message
+
+            if role == "user":
                 st.markdown(
                     f"""
                 <div class="message-animation">
                     <div class="user-message">
                         <strong>👤 You:</strong><br>
-                        {msg['message']}
+                        {message_text}
                     </div>
                 </div>
                 """,
@@ -443,7 +457,7 @@ if "messages" in st.session_state and st.session_state["messages"]:
                 <div class="message-animation">
                     <div class="bot-message">
                         <strong>🤖 DebateBot:</strong><br>
-                        {msg['message']}
+                        {message_text}
                     </div>
                 </div>
                 """,
