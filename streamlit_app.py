@@ -354,6 +354,8 @@ if "conversation_id" not in st.session_state:
     st.session_state["conversation_id"] = None
 if "messages" not in st.session_state:
     st.session_state["messages"] = []
+if "input_value" not in st.session_state:
+    st.session_state["input_value"] = ""
 
 # Sidebar for settings and info
 with st.sidebar:
@@ -384,6 +386,7 @@ with st.sidebar:
     if st.button("🔄 Start Fresh", use_container_width=True):
         st.session_state["conversation_id"] = None
         st.session_state["messages"] = []
+        st.session_state["input_value"] = ""
         st.success("✨ New conversation started!")
         st.rerun()
 
@@ -481,6 +484,7 @@ with col1:
         placeholder="Enter your debate point here... (Press Enter to send)",
         key="message_input",
         label_visibility="collapsed",
+        value=st.session_state["input_value"],
     )
 
 with col2:
@@ -521,6 +525,8 @@ if message_submitted and user_input:
             st.session_state["conversation_id"] = data["conversation_id"]
             st.session_state["messages"] = data["message"]
             st.session_state["last_input"] = user_input
+            # Clear the input box
+            st.session_state["input_value"] = ""
             st.rerun()
         except Exception as e:
             st.error(f"❌ Error processing message: {str(e)}")

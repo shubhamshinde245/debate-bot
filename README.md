@@ -1,8 +1,9 @@
 # 🤖 DebateBot Pro
 
-An intelligent AI-powered debate application built with Streamlit and FastAPI. Engage in meaningful debates with an AI that can argue from different perspectives on any topic.
+An intelligent AI-powered debate application built with Streamlit and OpenAI. Engage in meaningful debates with an AI that can argue from different perspectives on any topic.
 
-[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://your-app-name.streamlit.app/)
+[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://debate-chatbot.streamlit.app/)
+
 
 ## ✨ Features
 
@@ -11,16 +12,39 @@ An intelligent AI-powered debate application built with Streamlit and FastAPI. E
 - ⚖️ **Flexible Positions**: Choose whether the bot argues 'pro' or 'con'
 - 💾 **Conversation Memory**: Maintains context throughout the debate
 - 🎨 **Beautiful Interface**: Modern, responsive UI with smooth animations
+- 🐳 **Docker Ready**: Full containerization support for easy deployment
 - ☁️ **Cloud Ready**: Works both locally and on Streamlit Cloud
+- [**Technical Architecture & Design Decisions**](DECISION.md) — Deep dive into the system architecture, component breakdowns, and the rationale behind key engineering choices.
+
 
 ## 🚀 Quick Start
 
 ### Prerequisites
 
-1. **Python 3.8+** installed on your system
-2. **OpenAI API Key** - Get one from [OpenAI Platform](https://platform.openai.com/api-keys)
+- **Python 3.8+** or **Docker** installed on your system
+- **OpenAI API Key** - Get one from [OpenAI Platform](https://platform.openai.com/api-keys)
 
-### Installation
+### Option 1: Using Make (Recommended)
+
+The easiest way to get started is using the provided Makefile:
+
+```bash
+# Clone the repository
+git clone <your-repo-url>
+cd debate-bot
+
+# Quick setup (installs dependencies and creates .env file)
+make quickstart
+
+# Edit .env file with your OpenAI API key
+# Then run in development mode
+make dev
+
+# Or run with Docker
+make run
+```
+
+### Option 2: Manual Setup
 
 1. **Clone the repository**
    ```bash
@@ -35,27 +59,95 @@ An intelligent AI-powered debate application built with Streamlit and FastAPI. E
 
 3. **Set up environment variables**
    
-   Create a `.env` file in the project root:
+   Copy the example environment file:
    ```bash
-   echo "OPENAI_API_KEY=your_openai_api_key_here" > .env
+   cp .env.example .env
    ```
    
-   Replace `your_openai_api_key_here` with your actual OpenAI API key.
+   Edit `.env` and set your OpenAI API key:
+   ```bash
+   OPENAI_API_KEY=your_actual_api_key_here
+   ```
 
-### Running the Application
+4. **Run the application**
+   ```bash
+   # Development mode
+   python start.py
+   
+   # Or directly with Streamlit
+   streamlit run streamlit_app.py
+   ```
 
-#### Option 1: Direct Streamlit (Recommended)
+### Option 3: Docker Deployment
+
 ```bash
-streamlit run streamlit_app.py
+# Build and run with Docker Compose
+make run
+
+# Or manually
+docker-compose up -d
 ```
 
-#### Option 2: Using the startup script
-```bash
-# Start the app
-python start.py
+The application will be available at `http://localhost:8501`
 
-# Get setup help
-python start.py --help-setup
+## 🛠️ Available Make Commands
+
+The project includes a comprehensive Makefile for easy development and deployment:
+
+```bash
+# Show all available commands
+make help
+
+# Setup & Installation
+make install      # Install all requirements and dependencies
+make check-deps   # Check if all required tools are installed
+make setup-env    # Create .env file from template
+
+# Testing
+make test         # Run all tests
+
+# Running
+make run          # Run the service using Docker Compose
+make dev          # Run in development mode (local Python)
+
+# Management
+make down         # Stop all running services
+make clean        # Stop and remove all containers and volumes
+make logs         # Show logs from running services
+
+# Utilities
+make lint         # Run code linting
+make format       # Format code
+make build        # Build Docker images
+```
+
+## 🔧 Environment Variables
+
+The application uses environment variables for configuration. Copy `.env.example` to `.env` and configure:
+
+### Required Variables
+
+- **`OPENAI_API_KEY`**: Your OpenAI API key (required)
+  - Get from: https://platform.openai.com/api-keys
+  - Example: `sk-...`
+
+### Optional Variables
+
+- **`OPENAI_MODEL`**: OpenAI model to use (default: `gpt-3.5-turbo`)
+  - Available: `gpt-3.5-turbo`, `gpt-4`, `gpt-4-turbo-preview`
+- **`API_TIMEOUT`**: API timeout in seconds (default: `10`)
+- **`STREAMLIT_SERVER_PORT`**: Server port (default: `8501`)
+- **`STREAMLIT_SERVER_ADDRESS`**: Server address (default: `0.0.0.0`)
+- **`ENVIRONMENT`**: Environment mode (default: `production`)
+- **`LOG_LEVEL`**: Log level (default: `INFO`)
+
+### Example .env file:
+```bash
+OPENAI_API_KEY=sk-your-actual-api-key-here
+OPENAI_MODEL=gpt-3.5-turbo
+API_TIMEOUT=10
+ENVIRONMENT=development
+LOG_LEVEL=DEBUG
 ```
 
 ## 🌐 Deployment to Streamlit Cloud
@@ -79,7 +171,8 @@ python start.py --help-setup
 - **Frontend**: Streamlit app with beautiful UI
 - **AI Processing**: Integrated OpenAI GPT models for intelligent responses
 - **Memory**: In-memory conversation storage (can be extended to use databases)
-- **Deployment**: Single-file Streamlit app ready for cloud deployment
+- **Containerization**: Full Docker support with Docker Compose
+- **Deployment**: Ready for local development, Docker, and cloud deployment
 
 ## 📁 Project Structure
 
@@ -88,37 +181,108 @@ debate-bot/
 ├── streamlit_app.py      # Main Streamlit application
 ├── start.py              # Startup script
 ├── requirements.txt      # Python dependencies
+├── Makefile              # Development and deployment commands
+├── Dockerfile            # Docker container configuration
+├── docker-compose.yml    # Multi-service Docker setup
+├── .env.example          # Environment variables template
+├── .dockerignore         # Docker build exclusions
 ├── task_2/
 │   ├── models.py         # Pydantic models
 │   └── prompt.py         # AI system prompts
+├── test_app.py           # Test suite
 └── README.md
 ```
 
 ## 🔧 Configuration
-
-### Environment Variables
-
-- `OPENAI_API_KEY`: Your OpenAI API key (required)
-- `OPENAI_MODEL`: OpenAI model to use (default: gpt-3.5-turbo)
-- `API_TIMEOUT`: API timeout in seconds (default: 10)
 
 ### Customization
 
 - **AI Personality**: Modify `task_2/prompt.py` to change how the AI debates
 - **UI Styling**: Update the CSS in `streamlit_app.py`
 - **Models**: Change the AI model in the `generate_debate_response` function
+- **Docker**: Modify `Dockerfile` or `docker-compose.yml` for custom deployment
 
 ## 🐛 Troubleshooting
 
 ### Common Issues
 
 1. **"OPENAI_API_KEY environment variable is required"**
-   - Create a `.env` file with your API key
+   - Run `make setup-env` to create `.env` file
+   - Edit `.env` and set your API key
    - For Streamlit Cloud, add it as a secret
 
-2. **Slow responses**
+2. **Docker issues**
+   - Run `make check-deps` to verify Docker installation
+   - Try `make clean` then `make run` to rebuild
+   - Check logs with `make logs`
+
+3. **Slow responses**
    - Try using `gpt-3.5-turbo` instead of `gpt-4`
    - Check your OpenAI API usage limits
+   - Increase `API_TIMEOUT` in `.env` if needed
+
+4. **Port conflicts**
+   - Change `STREAMLIT_SERVER_PORT` in `.env`
+   - Or modify port mapping in `docker-compose.yml`
+
+5. **Permission issues (Docker)**
+   - Ensure Docker daemon is running
+   - On Linux, add your user to docker group: `sudo usermod -aG docker $USER`
+
+## 🛠️ Development
+
+### Local Development
+
+```bash
+# Install dependencies
+make install
+
+# Run tests
+make test
+
+# Start development server
+make dev
+
+# Format code
+make format
+
+# Run linting
+make lint
+```
+
+### Docker Development
+
+```bash
+# Build and run
+make run
+
+# View logs
+make logs
+
+# Stop services
+make down
+
+# Clean everything
+make clean
+```
+
+### Testing
+
+The project includes comprehensive tests:
+
+```bash
+# Run all tests
+make test
+
+# Or run directly
+python test_app.py
+```
+
+Tests cover:
+- Module imports
+- Environment configuration
+- Pydantic models
+- Basic functionality
 
 ## 🤝 Contributing
 
