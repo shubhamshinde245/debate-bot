@@ -188,7 +188,7 @@ def process_message(payload: dict) -> dict:
 ### AI Model Configuration
 
 **Optimized Parameters**:
-- **Model**: `gpt-5-nano` (cost-effective, fast, reliable)
+- **Model**: `gpt-3.5-turbo` (cost-effective, fast, reliable)
 - **Max Tokens**: 500 (concise but comprehensive responses)
 - **Temperature**: 0.7 (balanced creativity and consistency)
 - **Presence Penalty**: 0.6 (encourages topic diversity)
@@ -335,7 +335,7 @@ docker-compose --profile production up -d
 Required environment variables:
 ```bash
 OPENAI_API_KEY=sk-your-actual-api-key-here
-OPENAI_MODEL=gpt-5-nano
+OPENAI_MODEL=gpt-3.5-turbo
 API_TIMEOUT=10
 ENVIRONMENT=production
 ```

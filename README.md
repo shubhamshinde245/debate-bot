@@ -151,8 +151,8 @@ The application uses environment variables for configuration. Copy `.env.example
 
 ### Optional Variables
 
-- **`OPENAI_MODEL`**: OpenAI model to use (default: `gpt-5-nano`)
-  - Available: `gpt-5-nano`, `gpt-4`, `gpt-4-turbo-preview`
+- **`OPENAI_MODEL`**: OpenAI model to use (default: `gpt-3.5-turbo`)
+  - Available: `gpt-3.5-turbo`, `gpt-4`, `gpt-4-turbo-preview`
 - **`API_TIMEOUT`**: API timeout in seconds (default: `10`)
 - **`STREAMLIT_SERVER_PORT`**: Server port (default: `8501`)
 - **`STREAMLIT_SERVER_ADDRESS`**: Server address (default: `0.0.0.0`)
@@ -162,7 +162,7 @@ The application uses environment variables for configuration. Copy `.env.example
 ### Example .env file:
 ```bash
 OPENAI_API_KEY=sk-your-actual-api-key-here
-OPENAI_MODEL=gpt-5-nano
+OPENAI_MODEL=gpt-3.5-turbo
 API_TIMEOUT=10
 ENVIRONMENT=development
 LOG_LEVEL=DEBUG
@@ -235,7 +235,7 @@ debate-bot/
    - Check logs with `make logs`
 
 3. **Slow responses**
-   - Try using `gpt-5-nano` instead of `gpt-4`
+   - Try using `gpt-3.5-turbo` instead of `gpt-4`
    - Check your OpenAI API usage limits
    - Increase `API_TIMEOUT` in `.env` if needed
 
