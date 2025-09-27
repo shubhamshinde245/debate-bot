@@ -44,30 +44,18 @@ An intelligent AI-powered debate application built with Streamlit and FastAPI. E
 
 ### Running the Application
 
-#### Option 1: Integrated Mode (Recommended for Streamlit Cloud)
+#### Option 1: Direct Streamlit (Recommended)
 ```bash
 streamlit run streamlit_app.py
 ```
 
-#### Option 2: Separate API Server (For local development)
+#### Option 2: Using the startup script
 ```bash
-# Terminal 1: Start the API server
-python api_server.py
+# Start the app
+python start.py
 
-# Terminal 2: Start the Streamlit app
-streamlit run streamlit_app.py
-```
-
-#### Option 3: Using the startup script
-```bash
-# Start just the Streamlit app (integrated mode)
-python start.py streamlit
-
-# Start just the API server
-python start.py api
-
-# Get help for both modes
-python start.py both
+# Get setup help
+python start.py --help-setup
 ```
 
 ## 🌐 Deployment to Streamlit Cloud
@@ -77,7 +65,7 @@ python start.py both
 3. **Add your OpenAI API key** as a secret in Streamlit Cloud:
    - Go to your app settings
    - Add secret: `OPENAI_API_KEY` = `your_api_key_here`
-4. **Deploy!** The app will automatically use integrated mode
+4. **Deploy!** The app uses integrated AI processing
 
 ## 🎮 How to Use
 
@@ -89,16 +77,15 @@ python start.py both
 ## 🏗️ Architecture
 
 - **Frontend**: Streamlit app with beautiful UI
-- **Backend**: FastAPI server (optional) or integrated AI processing
-- **AI**: OpenAI GPT models for intelligent responses
+- **AI Processing**: Integrated OpenAI GPT models for intelligent responses
 - **Memory**: In-memory conversation storage (can be extended to use databases)
+- **Deployment**: Single-file Streamlit app ready for cloud deployment
 
 ## 📁 Project Structure
 
 ```
 debate-bot/
 ├── streamlit_app.py      # Main Streamlit application
-├── api_server.py         # FastAPI server (optional)
 ├── start.py              # Startup script
 ├── requirements.txt      # Python dependencies
 ├── task_2/
@@ -125,15 +112,11 @@ debate-bot/
 
 ### Common Issues
 
-1. **"Cannot connect to API server"**
-   - The app automatically falls back to integrated mode
-   - Make sure your OpenAI API key is set correctly
-
-2. **"OPENAI_API_KEY environment variable is required"**
+1. **"OPENAI_API_KEY environment variable is required"**
    - Create a `.env` file with your API key
    - For Streamlit Cloud, add it as a secret
 
-3. **Slow responses**
+2. **Slow responses**
    - Try using `gpt-3.5-turbo` instead of `gpt-4`
    - Check your OpenAI API usage limits
 
@@ -153,4 +136,3 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 - OpenAI for providing the AI models
 - Streamlit for the amazing web framework
-- FastAPI for the robust API framework

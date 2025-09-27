@@ -1,6 +1,5 @@
 # --- streamlit_app.py ---
 import streamlit as st
-import requests
 import time
 import os
 import uuid
@@ -67,21 +66,7 @@ def generate_debate_response(
         return f"I apologize, but I'm having trouble generating a response right now. Error: {str(e)}"
 
 
-def process_message_with_api(payload: dict) -> dict:
-    """Process message using external API server"""
-    try:
-        response = requests.post("http://localhost:8000/chat", json=payload, timeout=10)
-        if response.status_code == 200:
-            return response.json()
-        else:
-            raise Exception(f"API returned status {response.status_code}")
-    except requests.exceptions.ConnectionError:
-        raise Exception("Cannot connect to API server")
-    except Exception as e:
-        raise Exception(f"API error: {str(e)}")
-
-
-def process_message_integrated(payload: dict) -> dict:
+def process_message(payload: dict) -> dict:
     """Process message using integrated AI functionality"""
     try:
         # Get or create conversation
@@ -530,24 +515,14 @@ if message_submitted and user_input:
             "side": side,
         }
 
-        # Try to use API server first, fallback to integrated processing
+        # Process message using integrated AI functionality
         try:
-            data = process_message_with_api(payload)
+            data = process_message(payload)
             st.session_state["conversation_id"] = data["conversation_id"]
             st.session_state["messages"] = data["message"]
             st.session_state["last_input"] = user_input
             st.rerun()
-        except Exception as api_error:
-            # Fallback to integrated processing
-            try:
-                st.info("🔄 Using integrated AI processing...")
-                data = process_message_integrated(payload)
-                st.session_state["conversation_id"] = data["conversation_id"]
-                st.session_state["messages"] = data["message"]
-                st.session_state["last_input"] = user_input
-                st.rerun()
-            except Exception as integrated_error:
-                st.error(f"❌ Error processing message: {str(integrated_error)}")
-                st.error(f"API Error: {str(api_error)}")
+        except Exception as e:
+            st.error(f"❌ Error processing message: {str(e)}")
 
 st.markdown("</div>", unsafe_allow_html=True)

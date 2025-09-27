@@ -23,13 +23,7 @@ def test_imports():
         print(f"❌ streamlit_app import failed: {e}")
         return False
 
-    try:
-        import api_server
-
-        print("✅ api_server imports successfully")
-    except Exception as e:
-        print(f"❌ api_server import failed: {e}")
-        return False
+    # API server removed - using integrated processing only
 
     try:
         from task_2.models import ChatRequest, Message, ChatResponse
@@ -116,7 +110,7 @@ def main():
         print("\n🚀 Next steps:")
         print("1. Set your OPENAI_API_KEY in .env file")
         print("2. Run: streamlit run streamlit_app.py")
-        print("3. Or run: python start.py streamlit")
+        print("3. Or run: python start.py")
     else:
         print("⚠️  Some tests failed. Please check the errors above.")
         return 1
